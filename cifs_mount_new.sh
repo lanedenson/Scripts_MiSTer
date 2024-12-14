@@ -84,7 +84,7 @@ check_dependencies() {
     for KERNEL_MODULE in $KERNEL_MODULES; do
         if ! cat /lib/modules/$(uname -r)/modules.builtin | grep -q "$(echo "$KERNEL_MODULE" | sed 's/\./\\\./g')"; then
             if ! lsmod | grep -q "${KERNEL_MODULE%.*}"; then
-                echo "The current Kernel doesn't support CIFS (SAMBA). Please update your MiSTer Linux system."
+                echo "The current Kernel doesn't support CIFS (SAMBA). Please update your MiSTer Linux system.\n"
                 exit 1
             fi
         fi
@@ -158,7 +158,7 @@ mount_cifs() {
             SCRIPT_NAME=${SCRIPT_NAME%.*}
             mkdir -p "/tmp/$SCRIPT_NAME" > /dev/null 2>&1
             if mount -t cifs "$MOUNT_SOURCE" "/tmp/$SCRIPT_NAME" -o "$MOUNT_OPTIONS"; then
-                echo "$MOUNT_SOURCE mounted"
+                echo "$MOUNT_SOURCE mounted.\n"
                 if [ "$LOCAL_DIR" == "*" ]; then
                     LOCAL_DIR=""
                     for DIRECTORY in "/tmp/$SCRIPT_NAME"/*; do
@@ -182,13 +182,13 @@ mount_cifs() {
                 for DIRECTORY in $LOCAL_DIR; do
                     mkdir -p "$BASE_PATH/$DIRECTORY" > /dev/null 2>&1
                     if mount --bind "/tmp/$SCRIPT_NAME/$DIRECTORY" "$BASE_PATH/$DIRECTORY"; then
-                        echo "$DIRECTORY mounted"
+                        echo -e "$DIRECTORY mounted.\n"
                     else
-                        echo "$DIRECTORY not mounted"
+                        echo -e "$DIRECTORY not mounted.\n"
                     fi
                 done
             else
-                echo "$MOUNT_SOURCE not mounted"
+                echo -e "$MOUNT_SOURCE not mounted.\n"
             fi
         else
             if [ "$LOCAL_DIR" == "*" ]; then
@@ -214,18 +214,20 @@ mount_cifs() {
             for DIRECTORY in $LOCAL_DIR; do
                 mkdir -p "$BASE_PATH/$DIRECTORY" > /dev/null 2>&1
                 if mount -t cifs "$MOUNT_SOURCE" "$BASE_PATH/$DIRECTORY" -o "$MOUNT_OPTIONS"; then
-                    echo "$DIRECTORY mounted"
+                    echo -e "$DIRECTORY mounted.\n"
                 else
-                    echo "$DIRECTORY not mounted"
+                    echo -e "$DIRECTORY not mounted.\n"
                 fi
             done
         fi
     else
         mkdir -p "$BASE_PATH/$LOCAL_DIR" > /dev/null 2>&1
         if mount -t cifs "$MOUNT_SOURCE" "$BASE_PATH/$LOCAL_DIR" -o "$MOUNT_OPTIONS"; then
-            echo "$LOCAL_DIR mounted"
+            echo -e "$LOCAL_DIR mounted.\n"
+            echo -e "Done!\n"
+
         else
-            echo "$LOCAL_DIR not mounted"
+            echo -e "$LOCAL_DIR not mounted.\n"
         fi
     fi
 }
@@ -241,7 +243,7 @@ main() {
     fi
 
     if [ "$SERVER" == "" ]; then
-        echo "Please configure this script either editing ${ORIGINAL_SCRIPT_PATH##*/} or making a new ${INI_PATH##*/}"
+        echo -e "Please configure this script either editing ${ORIGINAL_SCRIPT_PATH##*/} or making a new ${INI_PATH##*/}"
         exit 1
     fi
 
@@ -251,7 +253,6 @@ main() {
         wait_for_server
     fi
     mount_cifs
-    echo "Done!"
     exit 0
 }
 
