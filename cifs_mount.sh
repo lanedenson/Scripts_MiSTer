@@ -232,7 +232,7 @@ function mount_cifs() {
                 mkdir -p "$BASE_PATH/$DIRECTORY" > /dev/null 2>&1
                 if mount -t cifs "$MOUNT_SOURCE/$DIRECTORY" "$BASE_PATH/$DIRECTORY" -o "$MOUNT_OPTIONS"
                     echo -e "$DIRECTORY mounted.\n"
-                else
+                then
                     echo -e "$DIRECTORY not mounted.\n"
                 fi
             done
