@@ -249,7 +249,7 @@ function mount_cifs() {
     fi
 }
 
-main() {
+function main() {
     ORIGINAL_SCRIPT_PATH="$0"
     if [ "$ORIGINAL_SCRIPT_PATH" == "bash" ]; then
         ORIGINAL_SCRIPT_PATH=$(ps | grep "^ *$PPID " | grep -o "[^ ]*$")
@@ -260,7 +260,7 @@ main() {
     fi
 
     if [ "$SERVER" == "" ]; then
-        echo -e "Please configure this script either editing ${ORIGINAL_SCRIPT_PATH##*/} or making a new ${INI_PATH##*/}"
+        echo -e "Please configure this script either editing ${ORIGINAL_SCRIPT_PATH##*/} or making a new ${INI_PATH##*/}.\n"
         exit 1
     fi
 
