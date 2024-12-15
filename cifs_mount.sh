@@ -13,9 +13,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Copyright 2018-2023 Alessandro "Locutus73" Miele
+# Copyright 2018-2019 Alessandro "Locutus73" Miele
+# You can download the latest version of this script from:
+# https://github.com/MiSTer-devel/Scripts_MiSTer
 
-# Version 2.2.0 - 2023-11-16 - Streamlined script, improved error handling, and updated Github link.
+# Version 2.1.1 - 2023-11-16 - Updated Github link, fixed unary operator error if "SHARE_DIRECTORY" not specified.
+# Version 2.1.0 - 2022-04-16 - Introduced "SHARE_DIRECTORY" option; useful if you don't have a dedicated MiSTer-share on the remote server, but only a specific folder which should be mounted here.
+# Version 2.0.1 - 2019-05-06 - Removed kernel modules downloading, now the script asks to update the MiSTer Linux system when necessary.
+# Version 2.0 - 2019-02-05 - Renamed from mount_cifs.sh and umount_cifs.sh to cifs_mount.sh and cifs_umount.sh for having them sequentially listed in alphabetical order.
+# Version 1.8 - 2019-02-03 - Added MOUNT_AT_BOOT option: "true" for automounting CIFS shares at boot time; it will create start/kill scripts in /etc/network/if-up.d and /etc/network/if-down.d.
+# Version 1.7 - 2019-02-02 - The script temporarily modifies the firewalling rules for querying the CIFS Server name with NetBIOS when needed.
+# Version 1.6 - 2019-02-02 - The script tries to download kernel modules (when needed) using SSL certificate verification.
+# Version 1.5.1 - 2019-01-19 - Now the script checks if kernel modules are built in, so it's compatible with latest MiSTer Linux distros.
+# Version 1.5 - 2019-01-15 - Added WAIT_FOR_SERVER option; set it to "true" in order to wait for the CIFS server to be reachable; useful when using this script at boot time.
+# Version 1.4 - 2019-01-07 - Added support for an ini configuration file with the same name as the original script, i.e. mount_cifs.ini; changed LOCAL_DIR="*" behaviour so that, when SINGLE_CIFS_CONNECTION="true", all remote directories are listed and mounted locally; kernel modules moved to /media/fat/linux.
+# Version 1.3 - 2019-01-05 - Added an advanced SINGLE_CIFS_CONNECTION option for making a single CIFS connection to the CIFS server, you can leave it set to "true"; implemented LOCAL_DIR="*" for mounting all local directories on the SD root.
+# Version 1.2 - 2019-01-04 - Changed the internal field separator from space " " to pipe "|" in order to allow directory names with spaces; made the script verbose with some output.
+# Version 1.1.1 - 2019-01-03 - Improved server name resolution speed for multiple mount points; now you can directly use an IP address; added des_generic.ko fscache.ko kernel modules.
+# Version 1.1 - 2019-01-03 - Implemented multiple mount points, improved descriptions for user options.
+# Version 1.0.1 - 2018-12-22 - Changed some option descriptions, thanks NML32
+# Version 1.0 - 2018-12-20 - First commit
 
 #=========   USER OPTIONS   =========
 #You can edit these user options or make an ini file with the same
@@ -213,7 +230,7 @@ function mount_cifs() {
             fi
             for DIRECTORY in $LOCAL_DIR; do
                 mkdir -p "$BASE_PATH/$DIRECTORY" > /dev/null 2>&1
-                if mount -t cifs "$MOUNT_SOURCE" "$BASE_PATH/$DIRECTORY" -o "$MOUNT_OPTIONS"; then
+                if mount -t cifs "$MOUNT_SOURCE/$DIRECTORY" "$BASE_PATH/$DIRECTORY" -o "$MOUNT_OPTIONS"
                     echo -e "$DIRECTORY mounted.\n"
                 else
                     echo -e "$DIRECTORY not mounted.\n"
