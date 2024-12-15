@@ -80,18 +80,18 @@ SINGLE_CIFS_CONNECTION="true"
 SPECIAL_DIRECTORIES="config|linux|System Volume Information"
 
 #=========CODE STARTS HERE=========
-check_dependencies() {
+function check_dependencies() {
     for KERNEL_MODULE in $KERNEL_MODULES; do
         if ! cat /lib/modules/$(uname -r)/modules.builtin | grep -q "$(echo "$KERNEL_MODULE" | sed 's/\./\\\./g')"; then
             if ! lsmod | grep -q "${KERNEL_MODULE%.*}"; then
-                echo "The current Kernel doesn't support CIFS (SAMBA). Please update your MiSTer Linux system.\n"
+                echo -e "Error: The current Kernel doesn't support CIFS (SAMBA). Please update your MiSTer Linux system.\n"
                 exit 1
             fi
         fi
     done
 }
 
-manage_boot_scripts() {
+function manage_boot_scripts() {
     NET_UP_SCRIPT="/etc/network/if-up.d/$(basename ${ORIGINAL_SCRIPT_PATH%.*})"
     NET_DOWN_SCRIPT="/etc/network/if-down.d/$(basename ${ORIGINAL_SCRIPT_PATH%.*})"
 
@@ -119,7 +119,7 @@ manage_boot_scripts() {
     fi
 }
 
-wait_for_server() {
+function wait_for_server() {
     if ! echo "$SERVER" | grep -q "^[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}$"; then
         echo "Waiting for $SERVER"
         until nmblookup $SERVER &>/dev/null; do
@@ -134,7 +134,7 @@ wait_for_server() {
     fi
 }
 
-mount_cifs() {
+function mount_cifs() {
     MOUNT_SOURCE="//$SERVER/$SHARE"
     if [ -n "$SHARE_DIRECTORY" ] && [ -n "$MOUNT_SOURCE" ]; then
         MOUNT_SOURCE+=/$SHARE_DIRECTORY
@@ -158,7 +158,7 @@ mount_cifs() {
             SCRIPT_NAME=${SCRIPT_NAME%.*}
             mkdir -p "/tmp/$SCRIPT_NAME" > /dev/null 2>&1
             if mount -t cifs "$MOUNT_SOURCE" "/tmp/$SCRIPT_NAME" -o "$MOUNT_OPTIONS"; then
-                echo "$MOUNT_SOURCE mounted.\n"
+                echo -e "$MOUNT_SOURCE mounted.\n"
                 if [ "$LOCAL_DIR" == "*" ]; then
                     LOCAL_DIR=""
                     for DIRECTORY in "/tmp/$SCRIPT_NAME"/*; do
@@ -250,9 +250,15 @@ main() {
     check_dependencies
     manage_boot_scripts
     if [ "$WAIT_FOR_SERVER" == "true" ]; then
-        wait_for_server
+        if ! wait_for_server; then
+            echo -e "Error: Failed to connect to the CIFS server.\n"
+            exit 1
+        fi
     fi
-    mount_cifs
+    if ! mount_cifs; then
+        echo -e "Error: Failed to mount the CIFS share.\n"
+        exit 1
+    fi
     exit 0
 }
 
